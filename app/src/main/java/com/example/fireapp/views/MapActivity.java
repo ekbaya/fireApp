@@ -5,16 +5,24 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.example.fireapp.R;
+import com.example.fireapp.controllers.FireAlertAPI;
+import com.example.fireapp.services.FireAlertListener;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -37,7 +45,11 @@ import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.maps.GeoApiContext;
 
-public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
+import java.util.HashMap;
+import java.util.Map;
+
+public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, View.OnClickListener ,
+        FireAlertListener {
     private GoogleMap mMap;
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private GeoApiContext geoApiContext = null;
@@ -49,6 +61,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     //views
     private View mapView;
     private Button btnRaiseAlarm;
+    private FireAlertAPI fireAlertAPI;
+    private ProgressDialog dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +70,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         setContentView(R.layout.activity_map);
 
         btnRaiseAlarm = findViewById(R.id.btnRaiseAlarm);
+        btnRaiseAlarm.setOnClickListener(this);
+
+        dialog = new  ProgressDialog(this);
+        fireAlertAPI = new FireAlertAPI(this);
+        fireAlertAPI.setFireAlertListener(this);
+        dialog.setMessage("PLease wait...");
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(MapActivity.this);
@@ -186,6 +206,82 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         }
                     }
                 });
+    }
+
+    @Override
+    public void onClick(View view) {
+       showContactsDetailsDialogue();
+    }
+
+    private void showContactsDetailsDialogue() {
+        ViewGroup viewGroup = findViewById(android.R.id.content);
+        //then we will inflate the custom alert dialog xml that we created
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.user_details_dialogue, viewGroup, false);
+
+        EditText nameEt = dialogView.findViewById(R.id.nameEt);
+        EditText phoneEt = dialogView.findViewById(R.id.phoneEt);
+        Button cancelBtn = dialogView.findViewById(R.id.cancelBtn);
+        Button sendBtn = dialogView.findViewById(R.id.sendBtn);
+
+        //Now we need an AlertDialog.Builder object
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+
+        //setting the view of the builder to our custom view that we already inflated
+        builder.setView(dialogView);
+        //finally creating the alert dialog and displaying it
+        final AlertDialog alertDialog = builder.create();
+        cancelBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alertDialog.dismiss();
+            }
+        });
+        sendBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (TextUtils.isEmpty(nameEt.getText().toString()) || TextUtils.isEmpty(phoneEt.getText().toString())){
+                    Toast.makeText(MapActivity.this, "All fields are required", Toast.LENGTH_SHORT).show();
+                }
+                else {
+                if (mLastKnownLocation != null){
+                    String latitude = String.valueOf(mLastKnownLocation.getLatitude());
+                    String longitude = String.valueOf(mLastKnownLocation.getLongitude());
+                    String name = nameEt.getText().toString();
+                    String phone = phoneEt.getText().toString();
+
+                    //sending data to database
+                    Map<String , Object> alert = new HashMap<>();
+                    alert.put("name", name);
+                    alert.put("phone", phone);
+                    alert.put("latitude", latitude);
+                    alert.put("longitude", longitude);
+
+                    fireAlertAPI.sendAnAlert(alert);
+                    alertDialog.dismiss();
+                    dialog.show();
+                }
+                else {
+                    Toast.makeText(MapActivity.this, "We cannot determine your current location, check and try again", Toast.LENGTH_SHORT).show();
+                }
+
+                }
+
+            }
+        });
+        alertDialog.show();
+    }
+
+    @Override
+    public void onAlertSent() {
+        dialog.dismiss();
+        Toast.makeText(this, "Alert has been sent successfully", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onException(Exception e) {
+        dialog.dismiss();
+        Toast.makeText(this, "Failed, "+e.getMessage(), Toast.LENGTH_LONG).show();
     }
 }
 

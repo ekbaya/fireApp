@@ -3,4 +3,9 @@
     <string name="permission_to_accesses_device_location_is_needed_to_provide_required_services_please_allow_the_permission">Permission to accesses device location is needed to provide required services. Please allow the permission</string>
     <string name="raise_a_fire_alert">Raise a fire alert</string>
     <string name="google_maps_api_key">AIzaSyBozgdcoXc0xTs3jcqUvx4oJIh2af1tjuY</string>
+    <string name="phone">Phone</string>
+    <string name="enter_your_contacts_details">Enter your contacts details</string>
+    <string name="name">Name</string>
+    <string name="cancel">Cancel</string>
+    <string name="send">Send</string>
 </resources>
