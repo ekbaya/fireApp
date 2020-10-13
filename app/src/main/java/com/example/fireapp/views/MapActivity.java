@@ -64,6 +64,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private FireAlertAPI fireAlertAPI;
     private ProgressDialog dialog;
 
+    private String latitude;
+    private String longitude;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -170,6 +173,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             if (mLastKnownLocation != null) {
                                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mLastKnownLocation.getLatitude(),
                                         mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+
+                                latitude = String.valueOf(mLastKnownLocation.getLatitude());
+                                longitude = String.valueOf(mLastKnownLocation.getLongitude());
                             } else {
                                 final LocationRequest locationRequest = LocationRequest.create();
                                 locationRequest.setInterval(10000);
@@ -186,6 +192,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mLastKnownLocation.getLatitude(),
                                                 mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
                                         mFusedLocationProviderClient.removeLocationUpdates(locationCallback);
+
+                                        latitude = String.valueOf(mLastKnownLocation.getLatitude());
+                                        longitude = String.valueOf(mLastKnownLocation.getLongitude());
                                     }
                                 };
                                 if (ActivityCompat.checkSelfPermission(MapActivity.this,
@@ -244,9 +253,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     Toast.makeText(MapActivity.this, "All fields are required", Toast.LENGTH_SHORT).show();
                 }
                 else {
-                if (mLastKnownLocation != null){
-                    String latitude = String.valueOf(mLastKnownLocation.getLatitude());
-                    String longitude = String.valueOf(mLastKnownLocation.getLongitude());
+                if (latitude != null && longitude != null){
                     String name = nameEt.getText().toString();
                     String phone = phoneEt.getText().toString();
 
