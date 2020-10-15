@@ -263,6 +263,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     alert.put("phone", phone);
                     alert.put("latitude", latitude);
                     alert.put("longitude", longitude);
+                    alert.put("status", "Unassigned");
 
                     fireAlertAPI.sendAnAlert(alert);
                     alertDialog.dismiss();
