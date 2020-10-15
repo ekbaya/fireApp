@@ -27,6 +27,7 @@ public class FireAlertAPI {
 
     public void sendAnAlert(Map<String , Object> alert){
         String timestamp = String.valueOf(System.currentTimeMillis());
+        alert.put("time", timestamp);
         reference
                 .child(timestamp)
                 .setValue(alert)
